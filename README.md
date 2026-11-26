@@ -1,6 +1,6 @@
 # eksi6 — 6x6 hoverboard-motor chassis
 
-Six-wheel skid-steer chassis driven by six hoverboard hub motors, each with its own hall-sensor BLDC controller.
+Six-wheel skid-steer **cargo platform** with a flat top deck (grey with orange accents), driven by six hoverboard hub motors, each with its own hall-sensor BLDC controller.
 An ESP32 is the chassis brain. First tests use a HOTRC DS-600 radio; later a fully custom remote (ESP32 + joysticks/buttons, 3D-printed industrial-style housing) replaces it.
 
 ![Signal wiring](docs/diagrams/signals.svg)
@@ -13,6 +13,7 @@ eksi6/
 │   ├── 01-first-test-wiring.md     wiring plan with diagrams and pin tables
 │   ├── 02-bill-of-materials.md     what to buy / have on the bench
 │   ├── 03-roadmap.md               phases: first test → custom remote → housing → companion computer
+│   ├── 04-design-brief.md          look and layout: flat cargo deck, grey/orange, hoverboard wheels
 │   ├── diagrams/                   SVG wiring diagrams (power, signals, DIR switch)
 │   └── pdf/                        printable / tablet assembly guide
 ├── firmware/
