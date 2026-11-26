@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="440" viewBox="0 0 680 440" role="img"><title>Signal wiring</title><style>.t{font:14px 'DejaVu Sans',sans-serif;fill:#2C2C2A}.ts{font:12px 'DejaVu Sans',sans-serif;fill:#5F5E5A}.th{font:bold 14px 'DejaVu Sans',sans-serif;fill:#2C2C2A}.c-coral>rect{fill:#FAECE7;stroke:#993C1D}.c-coral>text.th{fill:#712B13}.c-coral>text.ts{fill:#993C1D}.c-teal>rect{fill:#E1F5EE;stroke:#0F6E56}.c-teal>text.th{fill:#085041}.c-teal>text.ts{fill:#0F6E56}.c-purple>rect{fill:#EEEDFE;stroke:#534AB7}.c-purple>text.th{fill:#3C3489}.c-purple>text.ts{fill:#534AB7}.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A}.c-gray>text.th{fill:#2C2C2A}.c-gray>text.ts{fill:#444441}</style>
+<rect width="680" height="440" fill="#ffffff"/>
+<line x1="170" y1="110" x2="250" y2="110" stroke="#1D9E75" stroke-width="2"/>
+<line x1="170" y1="140" x2="250" y2="140" stroke="#1D9E75" stroke-width="2"/>
+<line x1="170" y1="170" x2="250" y2="170" stroke="#1D9E75" stroke-width="2"/>
+<line x1="380" y1="200" x2="430" y2="200" stroke="#7F77DD" stroke-width="2"/><line x1="510" y1="200" x2="540" y2="200" stroke="#7F77DD" stroke-width="2"/>
+<line x1="380" y1="240" x2="430" y2="240" stroke="#D85A30" stroke-width="2" stroke-dasharray="5 3"/><line x1="510" y1="240" x2="540" y2="240" stroke="#D85A30" stroke-width="2" stroke-dasharray="5 3"/>
+<line x1="380" y1="290" x2="430" y2="290" stroke="#7F77DD" stroke-width="2"/><line x1="510" y1="290" x2="540" y2="290" stroke="#7F77DD" stroke-width="2"/>
+<line x1="380" y1="330" x2="430" y2="330" stroke="#D85A30" stroke-width="2" stroke-dasharray="5 3"/><line x1="510" y1="330" x2="540" y2="330" stroke="#D85A30" stroke-width="2" stroke-dasharray="5 3"/>
+<g class="c-teal"><rect x="40" y="60" width="130" height="150" rx="8" stroke-width="1"/><text class="th" x="105" y="84" text-anchor="middle">Receiver</text><text class="ts" x="160" y="114" text-anchor="end">CH1 wheel</text><text class="ts" x="160" y="144" text-anchor="end">CH2 trigger</text><text class="ts" x="160" y="174" text-anchor="end">CH3 arm</text><text class="ts" x="105" y="200" text-anchor="middle">5 V from buck</text></g>
+<g class="c-teal"><rect x="250" y="60" width="130" height="300" rx="8" stroke-width="1"/><text class="th" x="315" y="82" text-anchor="middle">ESP32</text><text class="ts" x="258" y="114">D34</text><text class="ts" x="258" y="144">D35</text><text class="ts" x="258" y="174">D32</text><text class="ts" x="372" y="204" text-anchor="end">D25</text><text class="ts" x="372" y="244" text-anchor="end">D27</text><text class="ts" x="372" y="294" text-anchor="end">D26</text><text class="ts" x="372" y="334" text-anchor="end">D14</text></g>
+<g class="c-gray"><rect x="430" y="186" width="80" height="28" rx="4" stroke-width="1"/><text class="ts" x="470" y="204" text-anchor="middle">1 kΩ</text></g>
+<g class="c-gray"><rect x="430" y="224" width="80" height="32" rx="4" stroke-width="1"/><text class="ts" x="470" y="244" text-anchor="middle">2N7000</text></g>
+<g class="c-gray"><rect x="430" y="276" width="80" height="28" rx="4" stroke-width="1"/><text class="ts" x="470" y="294" text-anchor="middle">1 kΩ</text></g>
+<g class="c-gray"><rect x="430" y="314" width="80" height="32" rx="4" stroke-width="1"/><text class="ts" x="470" y="334" text-anchor="middle">2N7000</text></g>
+<g class="c-purple"><rect x="540" y="180" width="100" height="80" rx="8" stroke-width="1"/><text class="th" x="590" y="216" text-anchor="middle">Left side</text><text class="ts" x="590" y="234" text-anchor="middle">L1 L2 L3</text></g>
+<g class="c-purple"><rect x="540" y="270" width="100" height="80" rx="8" stroke-width="1"/><text class="th" x="590" y="306" text-anchor="middle">Right side</text><text class="ts" x="590" y="324" text-anchor="middle">R1 R2 R3</text></g>
+<line x1="40" y1="400" x2="80" y2="400" stroke="#1D9E75" stroke-width="2"/><text class="ts" x="88" y="404">RC channel</text>
+<line x1="200" y1="400" x2="240" y2="400" stroke="#7F77DD" stroke-width="2"/><text class="ts" x="248" y="404">Speed (VR/SV pin)</text>
+<line x1="420" y1="400" x2="460" y2="400" stroke="#D85A30" stroke-width="2" stroke-dasharray="5 3"/><text class="ts" x="468" y="404">DIR (Z/F pin)</text>
+</svg>
