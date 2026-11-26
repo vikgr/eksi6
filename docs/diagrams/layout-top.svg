@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="410" viewBox="0 0 680 410" role="img"><title>Top layout 400 x 800 mm deck</title><style>.t{font:14px 'DejaVu Sans',sans-serif;fill:#2C2C2A}.ts{font:12px 'DejaVu Sans',sans-serif;fill:#5F5E5A}.th{font:bold 14px 'DejaVu Sans',sans-serif;fill:#2C2C2A}.c-coral>rect{fill:#FAECE7;stroke:#993C1D}.c-coral>text.th{fill:#712B13}.c-coral>text.ts{fill:#993C1D}.c-teal>rect{fill:#E1F5EE;stroke:#0F6E56}.c-teal>text.th{fill:#085041}.c-teal>text.ts{fill:#0F6E56}.c-purple>rect{fill:#EEEDFE;stroke:#534AB7}.c-purple>text.th{fill:#3C3489}.c-purple>text.ts{fill:#534AB7}.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A}.c-gray>text.th{fill:#2C2C2A}.c-gray>text.ts{fill:#444441}</style>
+<rect width="680" height="410" fill="#ffffff"/>
+<rect x="100" y="70" width="480" height="240" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.5"/>
+<rect x="100" y="106" width="480" height="168" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/>
+<g fill="#2C2C2A"><rect x="176" y="70" width="99" height="36" rx="8"/><rect x="291" y="70" width="99" height="36" rx="8"/><rect x="405" y="70" width="99" height="36" rx="8"/><rect x="176" y="274" width="99" height="36" rx="8"/><rect x="291" y="274" width="99" height="36" rx="8"/><rect x="405" y="274" width="99" height="36" rx="8"/></g>
+<g fill="#EF9F27"><rect x="219" y="70" width="14" height="36"/><rect x="334" y="70" width="14" height="36"/><rect x="448" y="70" width="14" height="36"/><rect x="219" y="274" width="14" height="36"/><rect x="334" y="274" width="14" height="36"/><rect x="448" y="274" width="14" height="36"/></g>
+<g class="c-purple"><rect x="112" y="116" width="56" height="70" rx="4" stroke-width="1"/><text class="ts" x="140" y="146" text-anchor="middle">L1–L3</text><text class="ts" x="140" y="162" text-anchor="middle">ctrl</text></g>
+<g class="c-purple"><rect x="112" y="194" width="56" height="70" rx="4" stroke-width="1"/><text class="ts" x="140" y="224" text-anchor="middle">R1–R3</text><text class="ts" x="140" y="240" text-anchor="middle">ctrl</text></g>
+<g class="c-coral"><rect x="250" y="120" width="180" height="140" rx="6" stroke-width="1"/><text class="th" x="340" y="182" text-anchor="middle">Battery bay</text><text class="ts" x="340" y="202" text-anchor="middle">2–4 × Makita / Milwaukee</text></g>
+<g class="c-teal"><rect x="470" y="130" width="96" height="80" rx="4" stroke-width="1"/><text class="ts" x="518" y="160" text-anchor="middle">ESP32</text><text class="ts" x="518" y="176" text-anchor="middle">buck, DIR</text><text class="ts" x="518" y="192" text-anchor="middle">board</text></g>
+<g class="c-coral"><rect x="470" y="222" width="96" height="40" rx="4" stroke-width="1"/><text class="ts" x="518" y="246" text-anchor="middle">fuse, switch</text></g>
+<rect x="580" y="150" width="10" height="80" fill="#E24B4A"/>
+<text class="ts" x="598" y="186">front:</text><text class="ts" x="598" y="202">e-stop,</text><text class="ts" x="598" y="218">lights</text>
+<line x1="100" y1="335" x2="580" y2="335" stroke="#5F5E5A" stroke-width="1"/><line x1="100" y1="328" x2="100" y2="342" stroke="#5F5E5A"/><line x1="580" y1="328" x2="580" y2="342" stroke="#5F5E5A"/>
+<text class="ts" x="340" y="355" text-anchor="middle">800 mm deck</text>
+<line x1="80" y1="70" x2="80" y2="310" stroke="#5F5E5A" stroke-width="1"/><line x1="73" y1="70" x2="87" y2="70" stroke="#5F5E5A"/><line x1="73" y1="310" x2="87" y2="310" stroke="#5F5E5A"/>
+<text class="ts" x="40" y="194">400</text><text class="ts" x="40" y="210">mm</text>
+<line x1="226" y1="52" x2="340" y2="52" stroke="#5F5E5A" stroke-width="1"/><line x1="226" y1="46" x2="226" y2="58" stroke="#5F5E5A"/><line x1="340" y1="46" x2="340" y2="58" stroke="#5F5E5A"/>
+<text class="ts" x="283" y="40" text-anchor="middle">190 mm pitch</text>
+<text class="ts" x="100" y="378">Wheels 6.5" (165 mm) under the deck edge · wheelbase ~380 mm · track ~340 mm</text><text class="ts" x="100" y="396">Middle axle 5–8 mm lower for easier skid-steer turning</text>
+</svg>

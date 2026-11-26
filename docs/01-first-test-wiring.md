@@ -21,12 +21,15 @@
 
 | From | To | Notes |
 |---|---|---|
-| Battery + | Fuse 40–60 A → main switch / e-stop → V+ bus bar → V+ of all 6 controllers | ≥10 AWG main, ≥14 AWG per controller |
+| Battery: 2× Makita 18 V 5 Ah in series (A1 + → bus, A1 − → B1 +, B1 − → ground) | See [06-power-system.md](06-power-system.md) | 36 V nominal, 42 V full |
+| Battery + | Fuse 40 A → main switch / e-stop → V+ bus bar → V+ of all 6 controllers | ≥12 AWG main, ≥14 AWG per controller |
 | Battery − | Ground bar → V− of all 6 controllers | Same gauge |
 | After main switch | 5 V buck converter, ≥60 V input | Set to 5.0 V **before** connecting anything |
 | Buck 5 V / GND | ESP32 VIN / GND, receiver + / − | |
 | Controller signal GND (each) | Ground bar | Required, otherwise the throttle signal floats |
 | Controller 5 V outputs | Leave unconnected | Never join several regulators together |
+| + bus → 100 kΩ → **D36** → 6.8 kΩ → GND | Battery total voltage | + 100 nF from D36 to GND |
+| Middle of the two packs → 100 kΩ → **D39** → 6.8 kΩ → GND | Lower pack voltage | + 100 nF from D39 to GND |
 
 ## 2 · Signals
 
@@ -42,6 +45,8 @@
 | D27 | DIR switch → DIR (Z/F) of L1, L2, L3 joined | Left direction |
 | D26 (DAC) | 1 kΩ → SPEED of R1, R2, R3 joined | Right speed |
 | D14 | DIR switch → DIR of R1, R2, R3 joined | Right direction |
+| D36 (VP) | Battery divider, total | Low-voltage protection |
+| D39 (VN) | Battery divider, middle | Per-pack protection |
 | VIN / GND | Buck 5 V / ground bar | Power |
 
 All 8 signal pins are on one header row of the 30-pin board. Leave the brake pin unconnected for now. If the controller has an EN/STOP pin, wire it as labelled (often to GND to run).
@@ -97,5 +102,6 @@ The S3 has no DAC, so speed is 20 kHz PWM smoothed by an RC filter (4.7 kΩ in s
 | CH1 / CH2 / CH3 / CH4 | GPIO4 / GPIO5 / GPIO6 / GPIO18 |
 | Speed left / right (PWM → filter) | GPIO7 / GPIO15 |
 | DIR left / right | GPIO16 / GPIO17 |
+| Battery total / middle | GPIO1 / GPIO2 |
 
 Avoid GPIO0, 3, 45, 46 (boot), 19/20 (USB), 26–37 (flash/PSRAM), 43/44 (UART0). Needs Arduino-ESP32 core 3.x.

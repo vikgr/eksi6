@@ -12,7 +12,7 @@
 <path d="M480 200 L500 200 L500 400" fill="none" stroke="#5F5E5A" stroke-width="2" stroke-dasharray="6 4"/>
 <line x1="265" y1="336" x2="265" y2="400" stroke="#5F5E5A" stroke-width="2" stroke-dasharray="6 4"/>
 <line x1="420" y1="336" x2="420" y2="400" stroke="#5F5E5A" stroke-width="2" stroke-dasharray="6 4"/>
-<g class="c-coral"><rect x="40" y="40" width="130" height="56" rx="8" stroke-width="1"/><text class="th" x="105" y="62" text-anchor="middle">Battery 36 V</text><text class="ts" x="105" y="82" text-anchor="middle">+ right, − down</text></g>
+<g class="c-coral"><rect x="40" y="40" width="130" height="56" rx="8" stroke-width="1"/><text class="th" x="105" y="62" text-anchor="middle">2× Makita 18 V</text><text class="ts" x="105" y="82" text-anchor="middle">in series = 36 V</text></g>
 <g class="c-coral"><rect x="210" y="40" width="110" height="56" rx="8" stroke-width="1"/><text class="th" x="265" y="62" text-anchor="middle">Fuse</text><text class="ts" x="265" y="82" text-anchor="middle">40–60 A</text></g>
 <g class="c-coral"><rect x="360" y="40" width="120" height="56" rx="8" stroke-width="1"/><text class="th" x="420" y="62" text-anchor="middle">Main switch</text><text class="ts" x="420" y="82" text-anchor="middle">e-stop</text></g>
 <g class="c-coral"><rect x="520" y="40" width="120" height="56" rx="8" stroke-width="1"/><text class="th" x="580" y="62" text-anchor="middle">V+ bus bar</text><text class="ts" x="580" y="82" text-anchor="middle">to all 6</text></g>

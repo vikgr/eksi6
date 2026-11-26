@@ -5,16 +5,16 @@
 <title>eksi6 – 6x6 chassis first test assembly guide</title>
 <style>
 @page { size: A4; margin: 14mm 14mm 16mm 14mm; }
-body { font-family: 'DejaVu Sans', sans-serif; font-size: 12pt; color: #2C2C2A; line-height: 1.45; }
+body { font-family: 'DejaVu Sans', sans-serif; font-size: 11pt; color: #2C2C2A; line-height: 1.45; }
 h1 { font-size: 26pt; margin: 0 0 4mm; }
-h2 { font-size: 17pt; margin: 0 0 3mm; border-bottom: 2px solid #D85A30; padding-bottom: 1.5mm; }
+h2 { font-size: 16pt; margin: 0 0 2.5mm; border-bottom: 2px solid #D85A30; padding-bottom: 1.5mm; }
 h3 { font-size: 13pt; margin: 5mm 0 2mm; }
 .page { page-break-after: always; }
 .page:last-child { page-break-after: auto; }
-.lead { font-size: 14pt; color: #5F5E5A; margin-bottom: 6mm; }
-img.diagram { width: 100%; border: 1px solid #D3D1C7; border-radius: 3mm; margin: 2mm 0 4mm; }
-table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 11pt; }
-th, td { border: 1px solid #D3D1C7; padding: 2mm 2.5mm; text-align: left; vertical-align: top; }
+.lead { font-size: 13pt; color: #5F5E5A; margin-bottom: 4mm; }
+img.diagram { width: 88%; display: block; margin-left: auto; margin-right: auto; border: 1px solid #D3D1C7; border-radius: 3mm; margin: 2mm 0 4mm; }
+table { width: 100%; border-collapse: collapse; margin: 2mm 0 3mm; font-size: 10pt; }
+th, td { border: 1px solid #D3D1C7; padding: 1.3mm 2mm; text-align: left; vertical-align: top; }
 th { background: #F1EFE8; }
 .check td:first-child { width: 8mm; text-align: center; font-size: 14pt; }
 .warn { background: #FCEBEB; border-left: 4px solid #A32D2D; padding: 3mm 4mm; margin: 3mm 0; }
@@ -30,9 +30,10 @@ ol li, ul li { margin-bottom: 1.5mm; }
   <h1>eksi6 · 6x6 chassis</h1>
   <div class="lead">First test assembly guide: HOTRC DS-600 receiver → ESP32 → 6 hoverboard BLDC controllers</div>
 
+  <div class="warn"><b>Before anything:</b> wheels off the ground, fuse installed, e-stop in reach.</div>
   <h2>How it works</h2>
   <ul>
-    <li>The receiver outputs servo pulses (1000–2000 µs). The controllers need an analog throttle voltage plus a DIR pin, so the <b>ESP32 sits in between</b>.</li>
+    <li>The <b>ESP32 sits between</b> the receiver and the controllers (servo pulses → throttle voltage + DIR).</li>
     <li>Skid steer: the 3 left controllers share one speed wire and one DIR wire, the 3 right controllers share the other pair.</li>
     <li>The ESP32 mixes steering, ramps speed, stops before reversing and cuts the motors if the radio signal is lost.</li>
     <li><b>Max 5 km/h.</b> CH4 switch: turtle ~2.5 km/h / rabbit ~5 km/h. Smooth S-curve start and stop in both modes.</li>
@@ -46,13 +47,14 @@ ol li, ul li { margin-bottom: 1.5mm; }
     <tr><td>☐</td><td>5 V buck converter, ≥60 V input (e.g. XL7015)</td><td>1</td><td>Set to 5.0 V before connecting</td></tr>
     <tr><td>☐</td><td>2N7000 MOSFET</td><td>2</td><td>DIR switches</td></tr>
     <tr><td>☐</td><td>Resistors: 1 kΩ / 100 Ω / 100 kΩ</td><td>2 each</td><td>Small perfboard</td></tr>
-    <tr><td>☐</td><td>Fuse 40–60 A + holder</td><td>1</td><td>In battery + line</td></tr>
+    <tr><td>☐</td><td>2× Makita 18 V 5 Ah + 2 battery adapter docks</td><td>2</td><td>In series = 36 V</td></tr>
+    <tr><td>☐</td><td>Resistors 100 kΩ + 6.8 kΩ, capacitor 100 nF</td><td>2 each</td><td>Battery voltage sensing</td></tr>
+    <tr><td>☐</td><td>Fuse 40 A + holder</td><td>1</td><td>In battery + line</td></tr>
     <tr><td>☐</td><td>Main switch / emergency stop</td><td>1</td><td>Always reachable</td></tr>
     <tr><td>☐</td><td>10 kΩ potentiometer</td><td>1</td><td>Bench test (step 1)</td></tr>
     <tr><td>☐</td><td>Multimeter, stands for the chassis</td><td>–</td><td>Wheels off the ground</td></tr>
   </table>
 
-  <div class="warn"><b>Before anything:</b> wheels off the ground, fuse installed, e-stop in reach. Never switch DIR while motors are spinning fast.</div>
 </div>
 
 <div class="page">
@@ -60,7 +62,9 @@ ol li, ul li { margin-bottom: 1.5mm; }
   <img class="diagram" src="../docs/diagrams/power-ground.svg">
   <table>
     <tr><th>From</th><th>To</th><th>Wire</th></tr>
-    <tr><td>Battery +</td><td>Fuse → main switch → V+ bus bar → V+ of all 6 controllers</td><td>≥10 AWG main, ≥14 AWG per controller</td></tr>
+    <tr><td>2× Makita</td><td>A1 + → bus · A1 − → B1 + · B1 − → ground bar</td><td>Series = 36 V (42 V full)</td></tr>
+    <tr><td>Battery +</td><td>Fuse 40 A → main switch → V+ bus bar → V+ of all 6 controllers</td><td>≥12 AWG main, ≥14 AWG per controller</td></tr>
+    <tr><td>+ bus / middle</td><td>100 kΩ → ESP32 D36 / D39 → 6.8 kΩ → GND (+100 nF)</td><td>Battery protection</td></tr>
     <tr><td>Battery −</td><td>Ground bar → V− of all 6 controllers</td><td>Same gauge as +</td></tr>
     <tr><td>After main switch</td><td>Buck converter input</td><td>Thin wire OK</td></tr>
     <tr><td>Buck 5 V / GND</td><td>ESP32 VIN / GND and receiver + / −</td><td>Dupont / screw terminal</td></tr>
@@ -82,6 +86,7 @@ ol li, ul li { margin-bottom: 1.5mm; }
     <tr><td class="mono">D27</td><td>DIR switch → DIR (Z/F) of L1, L2, L3</td><td>Left direction</td></tr>
     <tr><td class="mono">D26</td><td>1 kΩ → SPEED of R1, R2, R3</td><td>Right speed (DAC)</td></tr>
     <tr><td class="mono">D14</td><td>DIR switch → DIR of R1, R2, R3</td><td>Right direction</td></tr>
+    <tr><td class="mono">D36 / D39</td><td>Battery dividers (total / middle)</td><td>Low-voltage protection</td></tr>
     <tr><td class="mono">VIN / GND</td><td>Buck 5 V / ground bar</td><td>Power</td></tr>
   </table>
   <p class="small">All 8 signal pins are on the same header row of the 30-pin board. Brake pin: leave unconnected. EN/STOP pin (if present): wire as labelled on the controller, often to GND to run.</p>
