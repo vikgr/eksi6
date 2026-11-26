@@ -37,13 +37,14 @@
 | D34 | Receiver CH1 signal | Steering wheel |
 | D35 | Receiver CH2 signal | Throttle trigger |
 | D32 | Receiver CH3 signal | ARM switch |
+| D33 | Receiver CH4 signal | Turtle / rabbit switch |
 | D25 (DAC) | 1 kΩ → SPEED (VR/SV) of L1, L2, L3 joined | Left speed |
 | D27 | DIR switch → DIR (Z/F) of L1, L2, L3 joined | Left direction |
 | D26 (DAC) | 1 kΩ → SPEED of R1, R2, R3 joined | Right speed |
 | D14 | DIR switch → DIR of R1, R2, R3 joined | Right direction |
 | VIN / GND | Buck 5 V / ground bar | Power |
 
-All 7 signal pins are on one header row of the 30-pin board. Leave the brake pin unconnected for now. If the controller has an EN/STOP pin, wire it as labelled (often to GND to run).
+All 8 signal pins are on one header row of the 30-pin board. Leave the brake pin unconnected for now. If the controller has an EN/STOP pin, wire it as labelled (often to GND to run).
 
 ## 3 · DIR switch — build twice (D27 → left, D14 → right)
 
@@ -92,7 +93,7 @@ The S3 has no DAC, so speed is 20 kHz PWM smoothed by an RC filter (4.7 kΩ in s
 
 | Function | S3 pin |
 |---|---|
-| CH1 / CH2 / CH3 | GPIO4 / GPIO5 / GPIO6 |
+| CH1 / CH2 / CH3 / CH4 | GPIO4 / GPIO5 / GPIO6 / GPIO18 |
 | Speed left / right (PWM → filter) | GPIO7 / GPIO15 |
 | DIR left / right | GPIO16 / GPIO17 |
 

@@ -9,6 +9,8 @@
 | Wheels | 6× hoverboard hub-motor wheels, 3 per side, skid steer |
 | Colours | **Grey** body, **orange** accents |
 | Look | Industrial, like professional material-handling equipment |
+| Speed | **Max 5 km/h.** Two modes: turtle ~2.5 km/h, rabbit ~5 km/h (see [05-speed-and-torque.md](05-speed-and-torque.md)) |
+| Priority | **Maximum torque at low speed** |
 | Concept image | First impression created in ChatGPT ("eksi6 Six-Wheeled Cargo Platform"), to be added to `docs/images/` |
 
 ## Side view (concept)

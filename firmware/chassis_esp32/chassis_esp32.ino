@@ -1,6 +1,6 @@
 // 6x6 chassis - first test
 // HOTRC DS-600 receiver (F-06A) -> ESP32 DevKit -> 6x BLDC hall controllers (3 left, 3 right)
-// Skid steer: CH1 = steering wheel, CH2 = throttle trigger, CH3 = ARM switch/button.
+// Skid steer: CH1 = steering wheel, CH2 = throttle trigger, CH3 = ARM switch/button, CH4 = turtle/rabbit.
 // Speed out: ESP32 DAC (GPIO25 left, GPIO26 right) -> controller speed/VR/throttle input (0..3.3 V).
 // DIR out:   GPIO27 left, GPIO14 right -> 2N7000 gate -> pulls controller DIR pins to GND.
 //
@@ -12,13 +12,18 @@
 const int PIN_CH1 = 34;   // steering   (input-only pin, fine)
 const int PIN_CH2 = 35;   // throttle
 const int PIN_CH3 = 32;   // arm switch
+const int PIN_CH4 = 33;   // turtle / rabbit switch
 const int PIN_SPD_L = 25; // DAC1
 const int PIN_SPD_R = 26; // DAC2
 const int PIN_DIR_L = 27;
 const int PIN_DIR_R = 14;
 
 // ---------- tuning ----------
-const float MAX_OUT    = 0.40f; // 0..1, fraction of usable throttle range (start low!)
+// Turtle / rabbit (CH4 switch). Fractions of the usable throttle range.
+// Calibrate on stands: measure wheel rpm, 6.5" wheel: 2.5 km/h ~ 80 rpm, 5 km/h ~ 160 rpm.
+const float MAX_OUT_TURTLE = 0.15f; // target ~2.5 km/h
+const float MAX_OUT_RABBIT = 0.30f; // target ~5 km/h, never above 5 km/h
+float maxOut = MAX_OUT_TURTLE;      // starts in turtle
 const float V_START    = 0.80f; // throttle voltage where controllers start to turn (measure with a pot)
 const float V_TOP      = 3.20f; // max DAC voltage
 const float RAMP_PER_S = 0.8f;  // how fast speed may change (full scale per second)
@@ -30,10 +35,10 @@ const uint32_t SIGNAL_TIMEOUT_MS = 100; // no pulses for this long = failsafe st
 const uint32_t REVERSE_PAUSE_MS  = 250; // wait at zero before flipping DIR
 
 // ---------- RC input capture ----------
-const int chPins[3] = {PIN_CH1, PIN_CH2, PIN_CH3};
-volatile uint32_t riseUs[3]  = {0, 0, 0};
-volatile uint32_t widthUs[3] = {1500, 1500, 1000};
-volatile uint32_t lastMs[3]  = {0, 0, 0};
+const int chPins[4] = {PIN_CH1, PIN_CH2, PIN_CH3, PIN_CH4};
+volatile uint32_t riseUs[4]  = {0, 0, 0, 0};
+volatile uint32_t widthUs[4] = {1500, 1500, 1000, 1000};
+volatile uint32_t lastMs[4]  = {0, 0, 0, 0};
 
 template <int i>
 void IRAM_ATTR isrCh() {
@@ -66,7 +71,7 @@ Side R{PIN_SPD_R, PIN_DIR_R, INVERT_R};
 void writeSide(Side &s) {
   bool rev = (s.dirState < 0) ^ s.inv;
   digitalWrite(s.dirPin, rev ? HIGH : LOW);   // HIGH -> transistor on -> DIR to GND
-  float v = (s.cur < 0.02f) ? 0.0f : V_START + s.cur * MAX_OUT * (V_TOP - V_START);
+  float v = (s.cur < 0.02f) ? 0.0f : V_START + s.cur * maxOut * (V_TOP - V_START);
   dacWrite(s.spdPin, (int)(v / 3.3f * 255.0f));
 }
 
@@ -97,10 +102,11 @@ void setup() {
   Serial.begin(115200);
   pinMode(PIN_DIR_L, OUTPUT); pinMode(PIN_DIR_R, OUTPUT);
   hardStop();
-  for (int i = 0; i < 3; i++) pinMode(chPins[i], INPUT);
+  for (int i = 0; i < 4; i++) pinMode(chPins[i], INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_CH1), isrCh<0>, CHANGE);
   attachInterrupt(digitalPinToInterrupt(PIN_CH2), isrCh<1>, CHANGE);
   attachInterrupt(digitalPinToInterrupt(PIN_CH3), isrCh<2>, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(PIN_CH4), isrCh<3>, CHANGE);
   Serial.println("6x6 first test ready. Flip ARM switch with throttle centred.");
 }
 
@@ -110,13 +116,18 @@ void loop() {
   float dt = (now - lastLoop) / 1000.0f; lastLoop = now;
 
   noInterrupts();
-  uint32_t w1 = widthUs[0], w2 = widthUs[1], w3 = widthUs[2];
+  uint32_t w1 = widthUs[0], w2 = widthUs[1], w3 = widthUs[2], w4 = widthUs[3];
   uint32_t l1 = lastMs[0],  l2 = lastMs[1];
   interrupts();
 
   bool signalOk = (now - l1 < SIGNAL_TIMEOUT_MS) && (now - l2 < SIGNAL_TIMEOUT_MS);
   float steer = norm(w1), thr = norm(w2);
   bool armSw = (w3 > 1700) && (now - lastMs[2] < SIGNAL_TIMEOUT_MS);
+  bool rabbit = (w4 > 1700) && (now - lastMs[3] < SIGNAL_TIMEOUT_MS);
+  float maxTarget = rabbit ? MAX_OUT_RABBIT : MAX_OUT_TURTLE;
+  float mStep = 0.2f * dt;                             // gear change takes ~1 s, no jerk
+  if (maxOut < maxTarget) maxOut = min(maxTarget, maxOut + mStep);
+  else                    maxOut = max(maxTarget, maxOut - mStep);
 
   if (!armSw || !signalOk) armed = false;
   else if (!armed && thr == 0) armed = true;   // arm only with throttle centred
@@ -134,8 +145,8 @@ void loop() {
 
   if (now - lastPrint > 200) {
     lastPrint = now;
-    Serial.printf("CH1 %4u CH2 %4u CH3 %4u | sig %d arm %d | L %+.2f R %+.2f\n",
-                  w1, w2, w3, signalOk, armed, L.cur * L.dirState, R.cur * R.dirState);
+    Serial.printf("CH1 %4u CH2 %4u CH3 %4u CH4 %4u | sig %d arm %d %s | L %+.2f R %+.2f\n",
+                  w1, w2, w3, w4, signalOk, armed, rabbit ? "RABBIT" : "turtle", L.cur * L.dirState, R.cur * R.dirState);
   }
   delay(10);
 }

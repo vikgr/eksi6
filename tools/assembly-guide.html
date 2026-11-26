@@ -35,6 +35,7 @@ ol li, ul li { margin-bottom: 1.5mm; }
     <li>The receiver outputs servo pulses (1000–2000 µs). The controllers need an analog throttle voltage plus a DIR pin, so the <b>ESP32 sits in between</b>.</li>
     <li>Skid steer: the 3 left controllers share one speed wire and one DIR wire, the 3 right controllers share the other pair.</li>
     <li>The ESP32 mixes steering, ramps speed, stops before reversing and cuts the motors if the radio signal is lost.</li>
+    <li><b>Max 5 km/h.</b> CH4 switch: turtle ~2.5 km/h / rabbit ~5 km/h.</li>
   </ul>
 
   <h2>Parts checklist</h2>
@@ -76,13 +77,14 @@ ol li, ul li { margin-bottom: 1.5mm; }
     <tr><td class="mono">D34</td><td>Receiver CH1 signal</td><td>Steering wheel</td></tr>
     <tr><td class="mono">D35</td><td>Receiver CH2 signal</td><td>Throttle trigger</td></tr>
     <tr><td class="mono">D32</td><td>Receiver CH3 signal</td><td>ARM switch</td></tr>
+    <tr><td class="mono">D33</td><td>Receiver CH4 signal</td><td>Turtle / rabbit</td></tr>
     <tr><td class="mono">D25</td><td>1 kΩ → SPEED (VR/SV) of L1, L2, L3</td><td>Left speed (DAC)</td></tr>
     <tr><td class="mono">D27</td><td>DIR switch → DIR (Z/F) of L1, L2, L3</td><td>Left direction</td></tr>
     <tr><td class="mono">D26</td><td>1 kΩ → SPEED of R1, R2, R3</td><td>Right speed (DAC)</td></tr>
     <tr><td class="mono">D14</td><td>DIR switch → DIR of R1, R2, R3</td><td>Right direction</td></tr>
     <tr><td class="mono">VIN / GND</td><td>Buck 5 V / ground bar</td><td>Power</td></tr>
   </table>
-  <p class="small">All 7 signal pins are on the same header row of the 30-pin board. Brake pin: leave unconnected. EN/STOP pin (if present): wire as labelled on the controller, often to GND to run.</p>
+  <p class="small">All 8 signal pins are on the same header row of the 30-pin board. Brake pin: leave unconnected. EN/STOP pin (if present): wire as labelled on the controller, often to GND to run.</p>
 </div>
 
 <div class="page">

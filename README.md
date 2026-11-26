@@ -14,6 +14,7 @@ eksi6/
 │   ├── 02-bill-of-materials.md     what to buy / have on the bench
 │   ├── 03-roadmap.md               phases: first test → custom remote → housing → companion computer
 │   ├── 04-design-brief.md          look and layout: flat cargo deck, grey/orange, hoverboard wheels
+│   ├── 05-speed-and-torque.md      max 5 km/h, turtle/rabbit modes, torque, closed-loop plan
 │   ├── diagrams/                   SVG wiring diagrams (power, signals, DIR switch)
 │   └── pdf/                        printable / tablet assembly guide
 ├── firmware/
@@ -32,6 +33,7 @@ eksi6/
 ```
 
 - **Skid steer:** left = throttle + steering, right = throttle − steering.
+- **Speed:** max 5 km/h, turtle (~2.5 km/h) / rabbit (~5 km/h) switch on CH4. Goal: maximum torque at low speed.
 - **Safety in firmware:** ARM switch (CH3), speed ramping, stop-and-pause before reversing, failsafe stop after 100 ms without radio signal, `MAX_OUT` top-speed limit.
 
 ## Quick start
