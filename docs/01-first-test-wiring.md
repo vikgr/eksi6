@@ -74,7 +74,7 @@ All 8 signal pins are on one header row of the 30-pin board. Leave the brake pin
 ## Test sequence
 
 1. **Bench test one controller.** One motor, wheel in the air, 10 kΩ pot as throttle (ends to the controller's 5 V/GND, wiper to SPEED). Note the start voltage → `V_START`. Check that DIR to GND reverses the motor.
-2. **Receiver + ESP32 on USB only.** Bind the transmitter, open Serial Monitor at 115200, check CH1/CH2/CH3 read ≈1000–2000, and find which switch is CH3.
+2. **Receiver + ESP32 on USB only.** Bind the transmitter, open Serial Monitor at 115200, check CH1–CH4 read ≈1000–2000, and find which switches are CH3 (ARM) and CH4 (turtle/rabbit).
 3. **Left side on stands,** in turtle mode. Flip ARM with the trigger centred, pull gently.
 4. **Fix directions** with `INVERT_L` / `INVERT_R`.
 5. **Add the right side,** check steering.

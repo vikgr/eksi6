@@ -104,7 +104,7 @@ ol li, ul li { margin-bottom: 1.5mm; }
   <table class="check">
     <tr><th></th><th>Step</th><th>Pass when</th></tr>
     <tr><td>☐</td><td><b>1. Bench test one controller.</b> One motor, wheel in the air. 10 kΩ pot: ends to controller 5 V and GND, wiper to SPEED.</td><td>Motor spins smoothly. Note the start voltage → <span class="mono">V_START</span>. DIR to GND reverses it.</td></tr>
-    <tr><td>☐</td><td><b>2. Receiver + ESP32 on USB only.</b> Flash <span class="mono">firmware/chassis_esp32</span>, open Serial Monitor at 115200.</td><td>CH1/CH2/CH3 read ≈1000–2000. Find which switch is CH3.</td></tr>
+    <tr><td>☐</td><td><b>2. Receiver + ESP32 on USB only.</b> Flash <span class="mono">firmware/chassis_esp32</span>, open Serial Monitor at 115200.</td><td>CH1–CH4 read ≈1000–2000. Find the CH3 (ARM) and CH4 (turtle/rabbit) switches.</td></tr>
     <tr><td>☐</td><td><b>3. Left side on stands.</b> Turtle mode. Flip ARM with trigger centred, pull gently.</td><td>Left wheels turn smoothly.</td></tr>
     <tr><td>☐</td><td><b>4. Fix direction.</b> Use <span class="mono">INVERT_L / INVERT_R</span>.</td><td>Trigger forward = wheels forward.</td></tr>
     <tr><td>☐</td><td><b>5. Add right side.</b></td><td>Wheel left = chassis turns left.</td></tr>
