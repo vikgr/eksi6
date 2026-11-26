@@ -12,9 +12,9 @@
 | 6 | ~~Deck size~~ 400 × 800 mm ✅ · still open: **max payload** in kg, **ground clearance** | Frame design, torque check | ⏳ partly |
 | 7 | ~~Concept image~~ | Added as `docs/images/eksi6-concept.png` | ✅ done |
 | 8 | **First-test parts on hand?** Buck ≥60 V, 2× 2N7000, resistors (incl. 2× 100 kΩ + 2× 6.8 kΩ battery dividers), 100 nF caps, 40 A fuse, e-stop, 10 kΩ pot | Needed for the first power-up | ⏳ open |
+| 9 | **Which DS-600 switches are CH3 and CH4** (read in the Serial Monitor) | ARM and turtle/rabbit mapping | ⏳ at first test |
 | 10 | **Controller undervoltage cutoff** (if on the label) | Should be below 30 V so the firmware stops first | ⏳ open |
 | 11 | **Wheel spacing decision**: close together (190 mm pitch, turns easily) or spread like the concept? | Skid-steer turning ([04](04-design-brief.md)) | ⏳ open |
-| 9 | **Which DS-600 switches are CH3 and CH4** (read in the Serial Monitor) | ARM and turtle/rabbit mapping | ⏳ at first test |
 
 ## 🔧 Build / test steps
 

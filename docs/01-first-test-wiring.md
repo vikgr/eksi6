@@ -49,7 +49,7 @@
 | D39 (VN) | Battery divider, middle | Per-pack protection |
 | VIN / GND | Buck 5 V / ground bar | Power |
 
-All 8 signal pins are on one header row of the 30-pin board. Leave the brake pin unconnected for now. If the controller has an EN/STOP pin, wire it as labelled (often to GND to run).
+All 10 signal pins (VP, VN, D34, D35, D32, D33, D25, D26, D27, D14) are on one header row of the 30-pin board. Leave the brake pin unconnected for now. If the controller has an EN/STOP pin, wire it as labelled (often to GND to run).
 
 ## 3 · DIR switch — build twice (D27 → left, D14 → right)
 
