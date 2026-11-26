@@ -35,7 +35,7 @@ ol li, ul li { margin-bottom: 1.5mm; }
     <li>The receiver outputs servo pulses (1000–2000 µs). The controllers need an analog throttle voltage plus a DIR pin, so the <b>ESP32 sits in between</b>.</li>
     <li>Skid steer: the 3 left controllers share one speed wire and one DIR wire, the 3 right controllers share the other pair.</li>
     <li>The ESP32 mixes steering, ramps speed, stops before reversing and cuts the motors if the radio signal is lost.</li>
-    <li><b>Max 5 km/h.</b> CH4 switch: turtle ~2.5 km/h / rabbit ~5 km/h.</li>
+    <li><b>Max 5 km/h.</b> CH4 switch: turtle ~2.5 km/h / rabbit ~5 km/h. Smooth S-curve start and stop in both modes.</li>
   </ul>
 
   <h2>Parts checklist</h2>
@@ -105,11 +105,12 @@ ol li, ul li { margin-bottom: 1.5mm; }
     <tr><th></th><th>Step</th><th>Pass when</th></tr>
     <tr><td>☐</td><td><b>1. Bench test one controller.</b> One motor, wheel in the air. 10 kΩ pot: ends to controller 5 V and GND, wiper to SPEED.</td><td>Motor spins smoothly. Note the start voltage → <span class="mono">V_START</span>. DIR to GND reverses it.</td></tr>
     <tr><td>☐</td><td><b>2. Receiver + ESP32 on USB only.</b> Flash <span class="mono">firmware/chassis_esp32</span>, open Serial Monitor at 115200.</td><td>CH1/CH2/CH3 read ≈1000–2000. Find which switch is CH3.</td></tr>
-    <tr><td>☐</td><td><b>3. Left side on stands.</b> <span class="mono">MAX_OUT = 0.3</span>. Flip ARM with trigger centred, pull gently.</td><td>Left wheels turn smoothly.</td></tr>
+    <tr><td>☐</td><td><b>3. Left side on stands.</b> Turtle mode. Flip ARM with trigger centred, pull gently.</td><td>Left wheels turn smoothly.</td></tr>
     <tr><td>☐</td><td><b>4. Fix direction.</b> Use <span class="mono">INVERT_L / INVERT_R</span>.</td><td>Trigger forward = wheels forward.</td></tr>
     <tr><td>☐</td><td><b>5. Add right side.</b></td><td>Wheel left = chassis turns left.</td></tr>
-    <tr><td>☐</td><td><b>6. Failsafe test.</b> Transmitter off while wheels spin.</td><td>Motors stop within 0.1 s.</td></tr>
-    <tr><td>☐</td><td><b>7. On the ground</b> at low <span class="mono">MAX_OUT</span>, raise step by step.</td><td>Controlled driving.</td></tr>
+    <tr><td>☐</td><td><b>5b. Smoothness check.</b> Full trigger and release, in turtle and in rabbit. Tune <span class="mono">ACCEL_KMH_S / DECEL_KMH_S / JERK_KMH_S2</span>.</td><td>No jerk at start, stop or mode change.</td></tr>
+    <tr><td>☐</td><td><b>6. Failsafe test.</b> Transmitter off while wheels spin.</td><td>Smooth stop within ~2.5 s; the e-stop cuts power instantly.</td></tr>
+    <tr><td>☐</td><td><b>7. On the ground</b>: empty first, then with a load.</td><td>Controlled driving.</td></tr>
   </table>
   <div class="warn">If anything smells hot, buzzes or jerks: hit the e-stop first, then measure.</div>
   <p class="small">Source: github.com/vikgr/eksi6 · docs/01-first-test-wiring.md</p>

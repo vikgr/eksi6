@@ -8,6 +8,46 @@
   - 🐇 **Rabbit: ~5 km/h** for driving empty or lightly loaded
 - **Goal: maximum pushing force (torque) at low speed.**
 
+## Smooth start and smooth stop (all modes)
+
+Heavy loads must never jerk. The firmware uses an **S-curve motion profile**: the acceleration itself builds up and fades out gradually, so there is no bump when starting, stopping, or switching turtle ↔ rabbit.
+
+![Motion profile](diagrams/motion-profile.svg)
+
+| Situation | Time (default tuning) |
+|---|---|
+| 0 → 2.5 km/h (turtle, full trigger) | ~2.1 s |
+| 0 → 5 km/h (rabbit, full trigger) | ~3.8 s |
+| 2.5 → 0 (release trigger) | ~1.8 s |
+| 5 → 0 (release trigger) | ~3.1 s |
+| Rabbit → turtle while driving | ~1.8 s, smooth |
+| Radio lost / disarmed at 5 km/h | ~2.5 s, firm but smooth |
+| **E-stop button** | **Instant**: cuts battery power |
+
+```
+ speed
+  5 ┤            ╭──────────╮            rabbit
+    │          ╱              ╲
+2.5 ┤      ╭──╱───╮            ╲         turtle
+    │    ╱  ╱      ╲            ╲
+  0 ┼──╯──╯         ╰──          ╰──
+    └─────────────────────────────────► time
+       soft start      soft stop
+```
+
+Tuning in `firmware/chassis_esp32/chassis_esp32.ino`:
+
+| Setting | Default | Effect |
+|---|---|---|
+| `ACCEL_KMH_S` | 1.5 | Max acceleration (lower = gentler start) |
+| `DECEL_KMH_S` | 2.0 | Max deceleration when releasing the trigger |
+| `JERK_KMH_S2` | 3.0 | How softly acceleration builds and fades (lower = softer, longer) |
+| `FAILSAFE_DECEL_KMH_S` | 5.0 | Stop on signal loss / disarm |
+
+The same km/h-based profile is used in both modes. The turtle simply has a lower target, so it feels just as soft.
+
+**Note on stopping:** these controllers usually coast when the throttle goes to zero. On a slope with a heavy load the platform could roll, so the brake pin is on the to-do list.
+
 ## What sets the torque in a hoverboard hub motor
 
 Hoverboard motors are **direct drive**: no gearbox. So, unlike a lawnmower, slowing down does **not** multiply the torque by itself.
@@ -40,17 +80,15 @@ Formula: rpm = (km/h × 1000 / 60) / (π × diameter in m)
 ## Phase 1: open loop (in firmware now)
 
 ```
- CH4 switch ──► turtle: MAX_OUT_TURTLE = 0.15   (≈2.5 km/h, to calibrate)
-            └─► rabbit: MAX_OUT_RABBIT = 0.30   (≈5 km/h, to calibrate)
-
- trigger 0..100 %  ──►  throttle 0 .. MAX_OUT  ──►  DAC  ──►  controllers
+ CH4 switch ──► turtle: target 0 .. 2.5 km/h
+            └─► rabbit: target 0 .. 5 km/h
+ trigger 0..100 % ──► target km/h ──► S-curve ──► km/h → throttle (OUT_AT_RABBIT) ──► DAC ──► controllers
 ```
 
 - Receiver **CH4 → ESP32 D33** (S3: GPIO18).
-- The mode change ramps over about 1 second, so it never jerks.
 - Speed still drops somewhat under heavy load, because there is no feedback yet.
 
-**Calibration on stands:** put a tape mark on a wheel and count its turns in 30 s (or use a phone tachometer app). Adjust `MAX_OUT_TURTLE` / `MAX_OUT_RABBIT` until the table values are reached.
+**Calibration on stands:** put a tape mark on a wheel and count its turns in 30 s (or use a phone tachometer app). Adjust `OUT_AT_RABBIT` until full trigger in rabbit gives 5 km/h (≈160 rpm on a 6.5″ wheel). Turtle follows automatically at half of that.
 
 ## Phase 2: closed loop (next firmware step)
 

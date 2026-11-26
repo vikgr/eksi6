@@ -1,10 +1,13 @@
-// 6x6 chassis - first test
+// eksi6 - 6x6 cargo platform - chassis firmware
 // HOTRC DS-600 receiver (F-06A) -> ESP32 DevKit -> 6x BLDC hall controllers (3 left, 3 right)
 // Skid steer: CH1 = steering wheel, CH2 = throttle trigger, CH3 = ARM switch/button, CH4 = turtle/rabbit.
 // Speed out: ESP32 DAC (GPIO25 left, GPIO26 right) -> controller speed/VR/throttle input (0..3.3 V).
 // DIR out:   GPIO27 left, GPIO14 right -> 2N7000 gate -> pulls controller DIR pins to GND.
 //
-// Safety: wheels OFF the ground for the first runs. MAX_OUT limits top speed.
+// Motion profile: S-curve (jerk-limited) acceleration and deceleration, the same in turtle and rabbit,
+// so heavy loads start and stop smoothly. Speeds are in km/h; the throttle mapping is calibrated on stands.
+//
+// Safety: wheels OFF the ground for the first runs.
 
 #include <Arduino.h>
 
@@ -18,21 +21,28 @@ const int PIN_SPD_R = 26; // DAC2
 const int PIN_DIR_L = 27;
 const int PIN_DIR_R = 14;
 
-// ---------- tuning ----------
-// Turtle / rabbit (CH4 switch). Fractions of the usable throttle range.
-// Calibrate on stands: measure wheel rpm, 6.5" wheel: 2.5 km/h ~ 80 rpm, 5 km/h ~ 160 rpm.
-const float MAX_OUT_TURTLE = 0.15f; // target ~2.5 km/h
-const float MAX_OUT_RABBIT = 0.30f; // target ~5 km/h, never above 5 km/h
-float maxOut = MAX_OUT_TURTLE;      // starts in turtle
+// ---------- speed modes ----------
+const float KMH_TURTLE = 2.5f;
+const float KMH_RABBIT = 5.0f;   // absolute maximum, never exceeded
+// Throttle (0..1 of usable DAC range) that gives KMH_RABBIT on the wheels. Calibrate on stands:
+// 6.5" wheel: 2.5 km/h ~ 80 rpm, 5 km/h ~ 160 rpm.
+const float OUT_AT_RABBIT = 0.30f;
+
+// ---------- motion profile (smooth start / smooth stop) ----------
+const float ACCEL_KMH_S   = 1.5f;  // max acceleration: 0 -> 5 km/h in ~3.8 s, 0 -> 2.5 km/h in ~2.1 s
+const float DECEL_KMH_S   = 2.0f;  // max deceleration when releasing the trigger: 5 -> 0 in ~3.1 s, 2.5 -> 0 in ~1.8 s
+const float JERK_KMH_S2   = 3.0f;  // how fast acceleration itself builds up (S-curve rounding)
+const float FAILSAFE_DECEL_KMH_S = 5.0f; // signal lost / disarmed: 5 -> 0 in ~2.5 s (the e-stop cuts power instantly)
+
+// ---------- throttle output ----------
 const float V_START    = 0.80f; // throttle voltage where controllers start to turn (measure with a pot)
 const float V_TOP      = 3.20f; // max DAC voltage
-const float RAMP_PER_S = 0.8f;  // how fast speed may change (full scale per second)
 const float DEADBAND   = 0.06f; // stick/trigger centre deadband
 const float STEER_GAIN = 0.7f;  // how strong turning is
 const bool  INVERT_L   = false; // flip if left side runs backwards
 const bool  INVERT_R   = true;  // right side is mirrored, usually needs inverting
 const uint32_t SIGNAL_TIMEOUT_MS = 100; // no pulses for this long = failsafe stop
-const uint32_t REVERSE_PAUSE_MS  = 250; // wait at zero before flipping DIR
+const uint32_t REVERSE_PAUSE_MS  = 300; // wait at standstill before flipping DIR
 
 // ---------- RC input capture ----------
 const int chPins[4] = {PIN_CH1, PIN_CH2, PIN_CH3, PIN_CH4};
@@ -61,9 +71,10 @@ float norm(uint32_t w) {               // 1000..2000 us -> -1..+1
 // ---------- one side of the chassis (3 controllers in parallel) ----------
 struct Side {
   int spdPin, dirPin; bool inv;
-  float cur = 0;            // current magnitude 0..1
+  float kmh = 0;            // commanded speed magnitude, km/h
+  float acc = 0;            // current acceleration, km/h per s (signed)
   int8_t dirState = 1;      // +1 forward, -1 reverse
-  uint32_t lastNonZero = 0;
+  uint32_t lastMoving = 0;
 };
 Side L{PIN_SPD_L, PIN_DIR_L, INVERT_L};
 Side R{PIN_SPD_R, PIN_DIR_R, INVERT_R};
@@ -71,29 +82,41 @@ Side R{PIN_SPD_R, PIN_DIR_R, INVERT_R};
 void writeSide(Side &s) {
   bool rev = (s.dirState < 0) ^ s.inv;
   digitalWrite(s.dirPin, rev ? HIGH : LOW);   // HIGH -> transistor on -> DIR to GND
-  float v = (s.cur < 0.02f) ? 0.0f : V_START + s.cur * maxOut * (V_TOP - V_START);
+  float frac = s.kmh / KMH_RABBIT;            // 0..1 of top speed
+  float v = (s.kmh < 0.05f) ? 0.0f : V_START + frac * OUT_AT_RABBIT * (V_TOP - V_START);
   dacWrite(s.spdPin, (int)(v / 3.3f * 255.0f));
 }
 
-void updateSide(Side &s, float target, float dt) {
-  uint32_t now = millis();
-  int8_t want = (target > 0) - (target < 0);
-  float tm = fabsf(target);
-  if (want != 0 && want != s.dirState) {      // reversal requested: stop first, pause, then flip
-    tm = 0;
-    if (s.cur == 0 && now - s.lastNonZero >= REVERSE_PAUSE_MS) s.dirState = want;
+// S-curve: acceleration ramps up/down with limited jerk, and tapers off before the target,
+// so there is no bump at the start, at the end, or when switching turtle <-> rabbit.
+void profile(Side &s, float targetKmh, float maxAcc, float maxDec, float dt) {
+  float err = targetKmh - s.kmh;
+  float lim = (err >= 0) ? maxAcc : maxDec;
+  float taper = sqrtf(2.0f * JERK_KMH_S2 * fabsf(err));   // ease into the target
+  float accWanted = copysignf(min(lim, taper), err);
+  float dj = JERK_KMH_S2 * dt;
+  if (s.acc < accWanted) s.acc = min(accWanted, s.acc + dj);
+  else                   s.acc = max(accWanted, s.acc - dj);
+  float before = s.kmh;
+  s.kmh += s.acc * dt;
+  if ((before <= targetKmh && s.kmh > targetKmh) || (before >= targetKmh && s.kmh < targetKmh)) {
+    s.kmh = targetKmh; s.acc = 0;            // arrived
   }
-  float step = RAMP_PER_S * dt;
-  if (s.cur < tm) s.cur = min(tm, s.cur + step);
-  else            s.cur = max(tm, s.cur - step);
-  if (s.cur > 0) s.lastNonZero = now;
-  writeSide(s);
+  if (s.kmh < 0) { s.kmh = 0; s.acc = 0; }
+  if (s.kmh > KMH_RABBIT) s.kmh = KMH_RABBIT; // hard cap
 }
 
-void hardStop() {
-  L.cur = R.cur = 0;
-  L.lastNonZero = R.lastNonZero = millis();
-  writeSide(L); writeSide(R);
+void updateSide(Side &s, float targetKmh, float maxAcc, float maxDec, float dt) {
+  uint32_t now = millis();
+  int8_t want = (targetKmh > 0) - (targetKmh < 0);
+  float tm = fabsf(targetKmh);
+  if (want != 0 && want != s.dirState) {      // reversal: smooth stop, pause, then flip
+    tm = 0;
+    if (s.kmh == 0 && now - s.lastMoving >= REVERSE_PAUSE_MS) s.dirState = want;
+  }
+  profile(s, tm, maxAcc, maxDec, dt);
+  if (s.kmh > 0) s.lastMoving = now;
+  writeSide(s);
 }
 
 bool armed = false;
@@ -101,52 +124,53 @@ bool armed = false;
 void setup() {
   Serial.begin(115200);
   pinMode(PIN_DIR_L, OUTPUT); pinMode(PIN_DIR_R, OUTPUT);
-  hardStop();
+  writeSide(L); writeSide(R);
   for (int i = 0; i < 4; i++) pinMode(chPins[i], INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_CH1), isrCh<0>, CHANGE);
   attachInterrupt(digitalPinToInterrupt(PIN_CH2), isrCh<1>, CHANGE);
   attachInterrupt(digitalPinToInterrupt(PIN_CH3), isrCh<2>, CHANGE);
   attachInterrupt(digitalPinToInterrupt(PIN_CH4), isrCh<3>, CHANGE);
-  Serial.println("6x6 first test ready. Flip ARM switch with throttle centred.");
+  Serial.println("eksi6 chassis ready. Flip ARM switch with throttle centred.");
 }
 
 void loop() {
   static uint32_t lastLoop = millis(), lastPrint = 0;
   uint32_t now = millis();
   float dt = (now - lastLoop) / 1000.0f; lastLoop = now;
+  if (dt > 0.05f) dt = 0.05f;
 
   noInterrupts();
   uint32_t w1 = widthUs[0], w2 = widthUs[1], w3 = widthUs[2], w4 = widthUs[3];
-  uint32_t l1 = lastMs[0],  l2 = lastMs[1];
+  uint32_t l1 = lastMs[0], l2 = lastMs[1], l3 = lastMs[2], l4 = lastMs[3];
   interrupts();
 
   bool signalOk = (now - l1 < SIGNAL_TIMEOUT_MS) && (now - l2 < SIGNAL_TIMEOUT_MS);
   float steer = norm(w1), thr = norm(w2);
-  bool armSw = (w3 > 1700) && (now - lastMs[2] < SIGNAL_TIMEOUT_MS);
-  bool rabbit = (w4 > 1700) && (now - lastMs[3] < SIGNAL_TIMEOUT_MS);
-  float maxTarget = rabbit ? MAX_OUT_RABBIT : MAX_OUT_TURTLE;
-  float mStep = 0.2f * dt;                             // gear change takes ~1 s, no jerk
-  if (maxOut < maxTarget) maxOut = min(maxTarget, maxOut + mStep);
-  else                    maxOut = max(maxTarget, maxOut - mStep);
+  bool armSw  = (w3 > 1700) && (now - l3 < SIGNAL_TIMEOUT_MS);
+  bool rabbit = (w4 > 1700) && (now - l4 < SIGNAL_TIMEOUT_MS);
+  float modeKmh = rabbit ? KMH_RABBIT : KMH_TURTLE;
 
   if (!armSw || !signalOk) armed = false;
-  else if (!armed && thr == 0) armed = true;   // arm only with throttle centred
+  else if (!armed && thr == 0 && L.kmh == 0 && R.kmh == 0) armed = true;   // arm only standing still, trigger centred
 
   if (!armed) {
-    hardStop();
+    // failsafe / disarmed: firm but smooth stop, never an instant cut
+    updateSide(L, 0, ACCEL_KMH_S, FAILSAFE_DECEL_KMH_S, dt);
+    updateSide(R, 0, ACCEL_KMH_S, FAILSAFE_DECEL_KMH_S, dt);
   } else {
     float left  = thr + steer * STEER_GAIN;
     float right = thr - steer * STEER_GAIN;
     float m = max(fabsf(left), fabsf(right));
     if (m > 1) { left /= m; right /= m; }
-    updateSide(L, left, dt);
-    updateSide(R, right, dt);
+    updateSide(L, left  * modeKmh, ACCEL_KMH_S, DECEL_KMH_S, dt);
+    updateSide(R, right * modeKmh, ACCEL_KMH_S, DECEL_KMH_S, dt);
   }
 
   if (now - lastPrint > 200) {
     lastPrint = now;
-    Serial.printf("CH1 %4u CH2 %4u CH3 %4u CH4 %4u | sig %d arm %d %s | L %+.2f R %+.2f\n",
-                  w1, w2, w3, w4, signalOk, armed, rabbit ? "RABBIT" : "turtle", L.cur * L.dirState, R.cur * R.dirState);
+    Serial.printf("CH1 %4u CH2 %4u CH3 %4u CH4 %4u | sig %d arm %d %s | L %+.2f R %+.2f km/h\n",
+                  w1, w2, w3, w4, signalOk, armed, rabbit ? "RABBIT" : "turtle",
+                  L.kmh * L.dirState, R.kmh * R.dirState);
   }
   delay(10);
 }
